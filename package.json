@@ -1,0 +1,35 @@
+{
+  "name": "picture-detection",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "@types/uuid": "^3.4.5",
+    "axios": "^0.19.0",
+    "core-js": "^2.6.5",
+    "egp-web-components": "git+ssh://git@192.168.3.10:egp-web/components.git",
+    "element-ui": "^2.10.1",
+    "iview": "^3.4.2",
+    "moment": "^2.24.0",
+    "register-service-worker": "^1.6.2",
+    "uuid": "^3.3.2",
+    "vue": "^2.6.10",
+    "vue-class-component": "^7.0.2",
+    "vue-property-decorator": "^8.2.1",
+    "vue-router": "^3.0.7",
+    "vuex": "^3.0.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.9.2",
+    "@vue/cli-plugin-pwa": "^3.9.0",
+    "@vue/cli-plugin-typescript": "^3.9.0",
+    "@vue/cli-service": "^3.9.2",
+    "node-sass": "^4.9.0",
+    "sass-loader": "^7.1.0",
+    "typescript": "^3.5.3",
+    "vue-template-compiler": "^2.6.10"
+  }
+}
