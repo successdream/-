@@ -1,17 +1,14 @@
 window.EcvAlarmData = {
     data: [{
-            "type": "one",
-            "filename": "test.mp4",
+            "filename": "高速隧道异常事件原始视频2.mp4",
             "result": [
-                { "picName": "1.jpg", "alarmType": "拥堵", "url": "/img/1.jpg" },
-                { "picName": "2.jpg", "alarmType": "逆行", "url": "/img/2.jpg" }
+                { "picName": "JXU1NkZFJXU3MjQ3MQ==.jpg", "alarmType": "交通事故", "url": "/img/1.jpg" }
             ]
         },
         {
-            "type": "two",
-            "filename": "test1.mp4",
+            "filename": "高速异常事件原始视频3.mp4",
             "result": [
-                { "picName": "3.jpg", "alarmType": "逆行", "url": "/img/3.jpg" },
+                { "picName": "3.jpg", "alarmType": "交通事故/交通拥堵/行人闯入", "url": "/img/2.jpg" },
             ]
         }
     ]

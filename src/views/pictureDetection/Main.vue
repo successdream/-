@@ -1,43 +1,52 @@
 <template>
   <div class="pic" v-loading="loading" element-loading-text="视频分析中" element-loading-spinner="el-icon-loading">
+    <div v-if="progress" style="position: absolute; width: 100%; height:100%;background-color: rgba(255, 255, 255, 0.8);">
+      <!-- <div style="z-index:3000;position: absolute; left: 50%; right:50%; transform: translate(-50%, -50%);width:300px;height:200px;"> -->
+        <el-progress style="left: 50%;top: 50%;transform: translate(-50%, -50%);width: 300px;" :percentage="percentage"></el-progress>
+      <!-- </div> -->
+      
+    </div>
     <div style="background:white;">
       <div style="border-left: 10px solid #67C23A;padding:10px;margin:10px;font-size:14px;border-bottom:1px solid #ccc;">
         视频分析
       </div>
     </div>
     <div style="flex:1;display:flex; flex-direction: column;padding-left: 30px;">
-       <div style="margin-bottom:20px;display:flex;width: 300px;align-items: center;">
-          <div style="font-weight: bold;font-size: 16px;">操作按钮：</div>
-          <div style="display:flex;justify-content: flex-end;margin-left:20px;">
-            <el-button :loading="uploadLoding" size="small" 
-            :type="uploadBtn" @click="submitUpload">上传并检测</el-button>
-            <el-button :loading="uploadLoding" size="small" 
-            type="danger" @click="clearAll">清空</el-button>
-            </div>
+       <!-- <div style="margin-bottom:20px;display:flex;width: 100%;align-items: center; justify-content: flex-end;">
+
+       </div> -->
+       <div style="display:flex;">
+         <el-upload ref="upload" class="avatar-uploader" action="https://jsonplaceholder.typicode.com/posts/" 
+         :show-file-list="false" :auto-upload="false" style="width: 700px;height:200px;" @change.native="changeNative">
+         <i style="border: 1px dashed #d9d9d9;color:#85ce61; font-size:80px;width: 700px;height:200px;border-radius:10px;" class="avatar-uploader-icon el-icon-upload"></i>
+         </el-upload>
+         <div style="display:flex;justify-content: flex-end; justify-content: flex-start;
+         margin-left:20px;margin-right: 30px;height:200px; flex-direction:column;">
+            <!-- <el-button :loading="uploadLoding" size="small" style="margin-bottom:30px;"
+            :type="uploadBtn" @click="submitUpload">上传检测</el-button> -->
+            <el-button :loading="uploadLoding" size="small" style="margin-bottom:30px;"
+            :type="uploadBtn" @click="submitUpload">上传检测</el-button>
+            <el-button :loading="uploadLoding"  style="margin-left: 0px;"
+            type="danger" size="small" @click="clearAll">清空检测</el-button>
+          </div>
        </div>
-       <el-upload ref="upload" class="avatar-uploader" action="https://jsonplaceholder.typicode.com/posts/" 
-       :show-file-list="false" :auto-upload="false" style="width: 300px;height:200px;">
-        <i style="border: 1px dashed #d9d9d9;color:#85ce61; font-size:80px;width: 300px;height:200px;border-radius:10px;" class="avatar-uploader-icon el-icon-upload"></i>
-      </el-upload>
+
       <div style="width:100%;border-bottom: 1px solid #ccc;margin-top:10px;margin-bottom:10px;"></div>
-      <div v-if="resultList.length" style="display:flex;margin-top:30px;" @click="showResult">
+      <div v-if="resultList.length" style="flex:1;display:flex;margin-top:30px;flex-wrap: wrap; overflow: auto;">
+        
         <div v-for="(item, index) in resultList[0].result" :key="index" 
-        style="display:flex; flex-direction: column;padding:5px;">
-           <div style="width: 150px; height: 150px;">
+        style="display:flex; flex-direction: column;padding:5px;" @click="showResult(item)">
+           <div style="width: 300px; height: 200px;">
               <img style="width:100%; height:100%;" :src="item.url" alt="">
            </div>
-           <div style="display:flex;">
-             <div style="font-weight: bold;">图片名字：</div>
-             <div>{{item.picName}}</div>
-           </div>
-           <div style="display:flex;">
+           <div style="display:flex;width: 300px;flex-wrap: wrap;">
              <div style="font-weight: bold;">报警类型：</div>
              <div>{{item.alarmType}}</div>
            </div>
         </div>
       </div>
     </div>
-    <!-- <record-detail ref="recordDetail"></record-detail> -->
+    <record-detail ref="recordDetail"></record-detail>
   </div>
 </template>
 
@@ -59,19 +68,18 @@ interface Point {
   y:number;
 }
 
-
 // http://192.168.3.109:7001/postImg
 @Component({
   components: {
     EgpSvg,
-    recordDetail,
+    recordDetail
   }
 })
 export default class IntrusionDetection extends Vue {
   $refs!: {
     upload: ElUpload;
     egpSvg: any;
-    recordDetail:recordDetail;
+    recordDetail: recordDetail;
   }
   private svgOptions: any = {};
   private fileList: any[] = [];
@@ -81,10 +89,13 @@ export default class IntrusionDetection extends Vue {
   private detectionResult: any = {} 
   private resultImg = ''
   private secondSelect = false;
-  private uploadBtn = 'success';
+  private uploadBtn = 'info';
   private intrusionStyle = true;
   private resultList: any[] = [];
   private loading = false;
+  private progress = false;
+  private percentage = 1;
+  private beginPercentage = 1;
 
   private uploadData: {
     confidence: number,
@@ -99,6 +110,7 @@ export default class IntrusionDetection extends Vue {
   };
 
   mounted(){
+    this.$router.push('/')
     if(this.uploadData && this.uploadData.hasOwnProperty('confidence'))  delete this.uploadData.confidence;
     if(this.uploadData && this.uploadData.hasOwnProperty('nms'))  delete this.uploadData.nms;
     if(this.uploadData && this.uploadData.hasOwnProperty('region'))  delete this.uploadData.region;
@@ -125,12 +137,19 @@ export default class IntrusionDetection extends Vue {
       })
       return;
     }
-
-    this.loading = true;
-     setTimeout(() => {
-      this.resultList = [data];
-      this.loading = false;
-    },3000)
+    let num: number = 0;
+    this.progress = true;
+     const t1 = setInterval(() => {
+       num ++
+       this.percentage = num * this.beginPercentage > 100 ? 100 : num * this.beginPercentage;
+          if(num > 100){
+            window.clearInterval((t1 as any));
+            this.progress = false;
+            this.resultList = [data];
+            this.percentage = 1;
+            this.uploadBtn = 'info';
+          } 
+     },100);
   }
   
   private originToCommon(rules: originRule[]): Rule[] {
@@ -142,47 +161,34 @@ export default class IntrusionDetection extends Vue {
     this.imgSrc = '';
     if(this.$refs.egpSvg) this.$refs.egpSvg.setData([]);
     this.resultList = [];
+    this.uploadBtn = 'info';
   }
   
   private uploadChange(file: any, fileList: any) {
-    // const imgSrc = window.URL.createObjectURL(file.raw);
-    // this.imgSrc = imgSrc;
+
   }
   
   private uploadSuccess(res: any, file: any, fileList: any) {
-    // this.uploadLoding = false;
-    // this.detectionResult = res;
-    // if(res.algType && res.algType !== 1){
-    //   console.log(res, '分析结果');
-    //   this.$message({message:"分析错误",
-    //     type: 'error'
-    //   })
-    //   return;
-    // }
-    // this.resultImg = res.img_base64? `data:image/png;base64, ${res.img_base64}` : '';
-    //强制刷新
-    // this.files = [];
+
   }
   
   private uploadError(res: any, file: any, fileList: any){
-    // this.uploadLoding = false;
-    // console.log(res, 'uploadError');
+
   }
   
   //清空数据
   private clearData(){
-    // if(this.$refs.egpSvg) this.$refs.egpSvg.setData([]);
+
   }
  //展示结果
-  private showResult(){
+  private showResult(data: any){
     this.$nextTick(() => {
-      this.$refs.recordDetail.show(this.resultList);
+      this.$refs.recordDetail.show(data);
     })
   }
 
   private nativeUploadChange(e: any){
-    // this.secondSelect = false;
-    // this.$refs.egpSvg.setData([]);
+
   }
   
 
@@ -212,6 +218,10 @@ export default class IntrusionDetection extends Vue {
 
   private clerarAll(){
     (this.$refs.upload as any).uploadFiles = []
+  }
+  private changeNative(){
+    if((this.$refs.upload as any).uploadFiles.length) this.uploadBtn = 'success';
+    // this.uploadBtn = 'success'
   }
 
 }
